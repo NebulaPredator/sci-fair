@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Science of Reproduction</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Config for Custom Colors/Fonts -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        science: {
+                            900: '#070F2B',
+                            800: '#1B1A55',
+                            700: '#535C91',
+                            300: '#9290C3',
+                            accent: '#00D0FF',
+                            pink: '#FF007F'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #070F2B;
+            color: #F8FAFC;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism utilities */
+        .glass {
+            background: rgba(27, 26, 85, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(146, 144, 195, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(27, 26, 85, 0.6) 0%, rgba(7, 15, 43, 0.8) 100%);
+            border: 1px solid rgba(83, 92, 145, 0.3);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 208, 255, 0.8);
+            box-shadow: 0 15px 50px -10px rgba(0, 208, 255, 0.4), inset 0 0 20px rgba(0, 208, 255, 0.1);
+            background: linear-gradient(145deg, rgba(35, 33, 110, 0.7) 0%, rgba(10, 20, 60, 0.9) 100%);
+            z-index: 10;
+        }
+        
+        .glass-card.leaving {
+            transition: transform 0.5s ease-out, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+        
+        .glass-card > * {
+            transform: translateZ(25px);
+        }
+
+        /* Typography enhancements */
+        .text-glow {
+            text-shadow: 0 0 20px rgba(0, 208, 255, 0.6);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(to right, #00D0FF, #FF007F);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Scroll reveal classes */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070F2B; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1B1A55; 
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #535C91; 
+        }
+
+        /* Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* Data Bar Animation */
+        .data-bar {
+            transform-origin: left;
+            animation: growBar 1.5s ease-out forwards;
+        }
+        @keyframes growBar {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-science-accent selection:text-science-900">
+
+    <!-- Interactive Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b-0 py-4 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-6 flex flex-wrap justify-between items-center">
+            <a href="#" class="text-2xl font-display font-bold tracking-tighter flex items-center gap-2 group">
+                <span class="text-gradient">SciFair</span>
+            </a>
+            <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide">
+                <a href="#organisms" class="hover:text-science-accent transition-colors">Organisms</a>
+                <a href="#global-data" class="hover:text-science-accent transition-colors">Demographics</a>
+                <a href="#biology-facts" class="hover:text-science-accent transition-colors">Biology</a>
+                <a href="#fun-facts" class="hover:text-science-accent transition-colors">Important Facts</a>
+            </div>
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-white hover:text-science-accent focus:outline-none" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden glass mt-4 px-6 py-4 flex flex-col space-y-4 text-sm font-semibold">
+            <a href="#organisms" class="hover:text-science-accent">Organisms</a>
+            <a href="#global-data" class="hover:text-science-accent">Demographics</a>
+            <a href="#biology-facts" class="hover:text-science-accent">Biology</a>
+            <a href="#fun-facts" class="hover:text-science-accent">Important Facts</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+        <div class="container mx-auto px-6 text-center z-10 relative">
+            <div class="inline-block mb-6 px-4 py-1 rounded-full border border-science-accent/30 bg-science-accent/10 text-science-accent text-sm font-semibold tracking-widest uppercase backdrop-blur-sm reveal">
+                Blueprint of Life
+            </div>
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-6 leading-tight reveal" style="transition-delay: 100ms;">
+                The Miracle of <br>
+                <span class="text-gradient text-glow">Reproduction</span>
+            </h1>
+            <p class="mt-4 text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto font-light leading-relaxed reveal" style="transition-delay: 200ms;">
+                Every human alive today is the result of an unbroken chain of reproduction stretching back billions of years. Explore the fascinating world of life's continuation.
+            </p>
+            
+            <div class="mt-8 reveal" style="transition-delay: 250ms;">
+                <p class="text-xs text-science-300 uppercase tracking-widest font-semibold mb-3">Research Team</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <span class="px-5 py-2 rounded-full bg-science-800/40 border border-science-700/50 text-gray-200 text-sm shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-science-accent hover:text-science-accent hover:shadow-[0_0_15px_rgba(0,208,255,0.3)] transition-all duration-300 cursor-default">Jason</span>
+                    <span class="px-5 py-2 rounded-full bg-science-800/40 border border-science-700/50 text-gray-200 text-sm shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-science-accent hover:text-science-accent hover:shadow-[0_0_15px_rgba(0,208,255,0.3)] transition-all duration-300 cursor-default">Tanmayi</span>
+                    <span class="px-5 py-2 rounded-full bg-science-800/40 border border-science-700/50 text-gray-200 text-sm shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-science-accent hover:text-science-accent hover:shadow-[0_0_15px_rgba(0,208,255,0.3)] transition-all duration-300 cursor-default">Shinjan</span>
+                    <span class="px-5 py-2 rounded-full bg-science-800/40 border border-science-700/50 text-gray-200 text-sm shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-science-accent hover:text-science-accent hover:shadow-[0_0_15px_rgba(0,208,255,0.3)] transition-all duration-300 cursor-default">Jessy</span>
+                    <span class="px-5 py-2 rounded-full bg-science-800/40 border border-science-700/50 text-gray-200 text-sm shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-science-accent hover:text-science-accent hover:shadow-[0_0_15px_rgba(0,208,255,0.3)] transition-all duration-300 cursor-default">Ananth</span>
+                </div>
+            </div>
+            
+            <div class="mt-12 flex flex-col sm:flex-row gap-4 justify-center reveal" style="transition-delay: 300ms;">
+                <a href="#organisms" class="px-8 py-4 bg-science-accent text-science-900 rounded-full font-bold hover:bg-white transition-all shadow-[0_0_20px_rgba(0,208,255,0.4)] hover:scale-105">
+                    Explore Organisms
+                </a>
+                <a href="#global-data" class="px-8 py-4 glass text-white rounded-full font-bold hover:bg-white/10 transition-all hover:scale-105 border border-white/20">
+                    View Global Data
+                </a>
+            </div>
+
+            <!-- Global Quick Facts -->
+            <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto reveal" style="transition-delay: 400ms;">
+                <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
+                    <h3 class="text-3xl font-display font-bold text-science-accent mt-4">~140M</h3>
+                    <p class="text-gray-400 text-sm mt-2">Babies born worldwide every year.</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
+                    <h3 class="text-3xl font-display font-bold text-science-pink mt-4">~70M</h3>
+                    <p class="text-gray-400 text-sm mt-2">People die worldwide every year.</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
+                    <h3 class="text-3xl font-display font-bold text-white mt-4">4 vs 2</h3>
+                    <p class="text-gray-400 text-sm mt-2">On average, 4 births and 2 deaths occur every second.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+        </div>
+    </header>
+
+    <!-- Organisms Section -->
+    <section id="organisms" class="py-24 relative z-10">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-4xl md:text-5xl font-display font-bold mb-4">Reproduction Across <span class="text-science-accent">Species</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">From humans to hydras, discover the diverse strategies nature uses to ensure the survival of the next generation.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Human -->
+                <div class="glass-card p-8 rounded-3xl reveal group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-science-accent/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div class="text-xs font-bold tracking-widest text-science-accent uppercase mb-4">Species 01</div>
+                    <h3 class="text-2xl font-bold mb-4 font-display">Human Reproduction</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-science-accent mt-2 mr-3 shrink-0 shadow-[0_0_8px_#00D0FF]"></div> The average pregnancy lasts about 40 weeks (9 months).</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-science-accent mt-2 mr-3 shrink-0 shadow-[0_0_8px_#00D0FF]"></div> A healthy adult male produces millions of sperms every day.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-science-accent mt-2 mr-3 shrink-0 shadow-[0_0_8px_#00D0FF]"></div> During fertilization, only one sperm normally fuses with the egg.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-science-accent mt-2 mr-3 shrink-0 shadow-[0_0_8px_#00D0FF]"></div> Identical twins develop from one fertilized egg; fraternal twins from two.</li>
+                    </ul>
+                </div>
+
+                <!-- Chicken -->
+                <div class="glass-card p-8 rounded-3xl reveal group relative overflow-hidden" style="transition-delay: 100ms;">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div class="text-xs font-bold tracking-widest text-yellow-500 uppercase mb-4">Species 02</div>
+                    <h3 class="text-2xl font-bold mb-4 font-display">Chickens</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-yellow-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FACC15]"></div> A hen usually lays 250–300 eggs per year, depending on the breed.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-yellow-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FACC15]"></div> It takes about 21 days for a chick to hatch.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-yellow-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FACC15]"></div> Eggshells are made mainly of calcium carbonate.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-yellow-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FACC15]"></div> Hens can lay unfertilized eggs, but they will not hatch into chicks.</li>
+                    </ul>
+                </div>
+
+                <!-- Frog -->
+                <div class="glass-card p-8 rounded-3xl reveal group relative overflow-hidden" style="transition-delay: 200ms;">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div class="text-xs font-bold tracking-widest text-green-500 uppercase mb-4">Species 03</div>
+                    <h3 class="text-2xl font-bold mb-4 font-display">Frogs</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-green-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#4ADE80]"></div> Frogs reproduce through external fertilization.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-green-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#4ADE80]"></div> A female frog can lay hundreds to thousands of eggs at one time.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-green-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#4ADE80]"></div> Tadpoles breathe using gills, while adult frogs use lungs and skin.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-green-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#4ADE80]"></div> They undergo metamorphosis, changing from tadpoles to adults.</li>
+                    </ul>
+                </div>
+
+                <!-- Seahorse -->
+                <div class="glass-card p-8 rounded-3xl reveal group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div class="text-xs font-bold tracking-widest text-orange-500 uppercase mb-4">Species 04</div>
+                    <h3 class="text-2xl font-bold mb-4 font-display">Seahorses</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-orange-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FB923C]"></div> One of the few animals where the male becomes pregnant.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-orange-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FB923C]"></div> The female places her eggs into the male's brood pouch.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-orange-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FB923C]"></div> Males can give birth to 5 to over 1,000 babies at a time.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-orange-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FB923C]"></div> Baby seahorses receive no parental care after birth.</li>
+                    </ul>
+                </div>
+
+                <!-- Hydra -->
+                <div class="glass-card p-8 rounded-3xl reveal group relative overflow-hidden" style="transition-delay: 100ms;">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div class="text-xs font-bold tracking-widest text-purple-400 uppercase mb-4">Species 05</div>
+                    <h3 class="text-2xl font-bold mb-4 font-display">Hydra</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-purple-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#C084FC]"></div> Reproduces asexually by budding under favorable conditions.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-purple-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#C084FC]"></div> A new hydra grows as a small bud on the parent's body.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-purple-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#C084FC]"></div> The bud detaches when fully developed and lives independently.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-purple-400 mt-2 mr-3 shrink-0 shadow-[0_0_8px_#C084FC]"></div> Can also reproduce sexually under unfavorable conditions.</li>
+                    </ul>
+                </div>
+                
+                <!-- Importance -->
+                <div class="glass-card p-8 rounded-3xl reveal group relative overflow-hidden bg-gradient-to-br from-science-800/80 to-science-900" style="transition-delay: 200ms;">
+                    <div class="text-xs font-bold tracking-widest text-white uppercase mb-4">Overview</div>
+                    <h3 class="text-2xl font-bold mb-4 font-display text-science-accent">Why is it Important?</h3>
+                    <ul class="space-y-3 text-gray-200 font-semibold">
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-white mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FFF]"></div> Ensures the continuation of a species.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-white mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FFF]"></div> Passes genetic information from parents to offspring.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-white mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FFF]"></div> Maintains biodiversity.</li>
+                        <li class="flex items-start"><div class="w-2 h-2 rounded-full bg-white mt-2 mr-3 shrink-0 shadow-[0_0_8px_#FFF]"></div> Helps organisms adapt and evolve over generations.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Demographics Data Section -->
+    <section id="global-data" class="py-24 relative z-10 bg-science-900/50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-4xl md:text-5xl font-display font-bold mb-4">Global <span class="text-science-pink">Demographics</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">Analyzing birth and death rates across major populations provides insight into our world's future.</p>
+            </div>
+
+            <!-- Table 1: Births vs Deaths -->
+            <div class="glass rounded-3xl p-6 md:p-10 mb-12 reveal overflow-x-auto shadow-2xl">
+                <h3 class="text-2xl font-bold mb-6 font-display border-b border-science-700/50 pb-4">Births & Deaths by Country (Estimated per Year)</h3>
+                <div class="min-w-[800px]">
+                    <div class="grid grid-cols-12 gap-4 text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 px-4">
+                        <div class="col-span-3">Country</div>
+                        <div class="col-span-4">Births (Millions)</div>
+                        <div class="col-span-1 text-center"></div>
+                        <div class="col-span-4">Deaths (Millions)</div>
+                    </div>
+                    
+                    <!-- Data Rows dynamically styled -->
+                    <div class="space-y-3" id="stats-container">
+                        <!-- JS will populate this to keep HTML clean and calculate bar widths -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table 2: Population Trends -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass rounded-3xl p-6 md:p-10 reveal">
+                    <h3 class="text-2xl font-bold mb-6 font-display border-b border-science-700/50 pb-4 flex items-center justify-between">
+                        <span>Population Trends</span>
+                        <span class="text-sm font-normal text-gray-400 bg-science-800 px-3 py-1 rounded-full">Births > Deaths?</span>
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-green-900/20 border border-green-500/20 hover:bg-green-900/40 transition">
+                            <span class="font-bold flex items-center gap-2">India</span>
+                            <div class="text-right">
+                                <span class="block text-green-400 font-bold">Yes</span>
+                                <span class="text-xs text-gray-400">Growing</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-green-900/20 border border-green-500/20 hover:bg-green-900/40 transition">
+                            <span class="font-bold flex items-center gap-2">Nigeria</span>
+                            <div class="text-right">
+                                <span class="block text-green-400 font-bold">Yes</span>
+                                <span class="text-xs text-gray-400">Growing very fast</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-green-900/20 border border-green-500/20 hover:bg-green-900/40 transition">
+                            <span class="font-bold flex items-center gap-2">Pakistan</span>
+                            <div class="text-right">
+                                <span class="block text-green-400 font-bold">Yes</span>
+                                <span class="text-xs text-gray-400">Growing</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-yellow-900/20 border border-yellow-500/20 hover:bg-yellow-900/40 transition">
+                            <span class="font-bold flex items-center gap-2">USA</span>
+                            <div class="text-right">
+                                <span class="block text-yellow-400 font-bold">Slightly</span>
+                                <span class="text-xs text-gray-400">Slow growth</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass rounded-3xl p-6 md:p-10 reveal" style="transition-delay: 200ms;">
+                    <h3 class="text-2xl font-bold mb-6 font-display border-b border-science-700/50 pb-4 text-transparent">
+                        Shrinking Populations
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-red-900/20 border border-red-500/20 hover:bg-red-900/40 transition">
+                            <span class="font-bold flex items-center gap-2">China</span>
+                            <div class="text-right">
+                                <span class="block text-red-400 font-bold">No</span>
+                                <span class="text-xs text-gray-400">Shrinking</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-red-900/20 border border-red-500/20 hover:bg-red-900/40 transition">
+                            <span class="font-bold flex items-center gap-2">Japan</span>
+                            <div class="text-right">
+                                <span class="block text-red-400 font-bold">No</span>
+                                <span class="text-xs text-gray-400">Shrinking (Oldest Pop.)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-red-900/20 border border-red-500/20 hover:bg-red-900/40 transition">
+                            <span class="font-bold flex items-center gap-2">Italy</span>
+                            <div class="text-right">
+                                <span class="block text-red-400 font-bold">No</span>
+                                <span class="text-xs text-gray-400">Shrinking</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 rounded-xl bg-red-900/20 border border-red-500/20 hover:bg-red-900/40 transition">
+                            <span class="font-bold flex items-center gap-2">South Korea</span>
+                            <div class="text-right">
+                                <span class="block text-red-400 font-bold">No</span>
+                                <span class="text-xs text-gray-400">Shrinking</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Biology Facts Section -->
+    <section id="biology-facts" class="py-24 relative z-10">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="w-full md:w-1/2 reveal">
+                    <h2 class="text-4xl md:text-5xl font-display font-bold mb-6">Amazing <br><span class="text-science-accent text-glow">Biology Facts</span></h2>
+                    <p class="text-gray-300 text-lg mb-8 leading-relaxed">
+                        Reproduction at the cellular level is incredibly complex and heavily relies on specialized processes to create life. Let's look at the microscopic foundations.
+                    </p>
+                    
+                    <div class="space-y-6">
+                        <div class="glass-card p-5 rounded-2xl flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-full bg-science-accent/20 border border-science-accent/30 flex items-center justify-center font-bold text-science-accent flex-shrink-0">01</div>
+                            <div>
+                                <h4 class="font-bold text-lg text-white">Fertilization & Zygote</h4>
+                                <p class="text-sm text-gray-400 mt-1">Fertilization is the process in which a sperm and egg fuse to form a zygote. A zygote is the very first cell of a new organism.</p>
+                            </div>
+                        </div>
+                        <div class="glass-card p-5 rounded-2xl flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-full bg-science-pink/20 border border-science-pink/30 flex items-center justify-center font-bold text-science-pink flex-shrink-0">02</div>
+                            <div>
+                                <h4 class="font-bold text-lg text-white">Mitosis vs Meiosis</h4>
+                                <p class="text-sm text-gray-400 mt-1"><strong class="text-science-accent">Mitosis</strong> helps the embryo grow by increasing the number of cells. <strong class="text-science-pink">Meiosis</strong> produces reproductive cells (gametes) with half the normal number of chromosomes.</p>
+                            </div>
+                        </div>
+                        <div class="glass-card p-5 rounded-2xl flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center font-bold text-purple-400 flex-shrink-0">03</div>
+                            <div>
+                                <h4 class="font-bold text-lg text-white">Chromosomes</h4>
+                                <p class="text-sm text-gray-400 mt-1">Humans have 46 chromosomes in standard cells. However, sperms and eggs each contain exactly 23 chromosomes to ensure the zygote has the correct total.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="w-full md:w-1/2 relative reveal">
+                    <!-- Decorative biological graphic placeholder -->
+                    <div class="aspect-square rounded-full border border-science-700 bg-science-800/30 flex items-center justify-center relative shadow-[0_0_50px_rgba(0,208,255,0.1)]">
+                        <div class="absolute w-[80%] h-[80%] rounded-full border border-science-accent/40 animate-[spin_20s_linear_infinite]"></div>
+                        <div class="absolute w-[60%] h-[60%] rounded-full border border-science-pink/40 animate-[spin_15s_linear_infinite_reverse]"></div>
+                        <div class="absolute w-[40%] h-[40%] rounded-full border-2 border-dashed border-science-300 animate-[spin_10s_linear_infinite]"></div>
+                        <div class="text-4xl font-display font-bold text-science-300 tracking-widest animate-pulse">DNA</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fun Facts Section -->
+    <section id="fun-facts" class="py-24 relative z-10 bg-science-800/40 border-t border-science-700/30">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-4xl md:text-5xl font-display font-bold mb-4">Important <span class="text-science-pink">Facts</span></h2>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Fact 1 -->
+                <div class="glass-card p-6 rounded-2xl reveal group cursor-pointer transition">
+                    <div class="text-xl font-bold text-science-accent mb-3 border-b border-science-accent/30 pb-2 inline-block">Fact 01</div>
+                    <p class="text-gray-200">Some octopuses reproduce <strong class="text-science-accent">only once</strong> in their entire lifetime before dying shortly after.</p>
+                </div>
+                <!-- Fact 2 -->
+                <div class="glass-card p-6 rounded-2xl reveal group cursor-pointer transition" style="transition-delay: 100ms;">
+                    <div class="text-xl font-bold text-science-pink mb-3 border-b border-science-pink/30 pb-2 inline-block">Fact 02</div>
+                    <p class="text-gray-200">The <strong class="text-science-accent">temperature</strong> of a turtle's nest can actually determine whether the babies are male or female!</p>
+                </div>
+                <!-- Fact 3 -->
+                <div class="glass-card p-6 rounded-2xl reveal group cursor-pointer transition" style="transition-delay: 200ms;">
+                    <div class="text-xl font-bold text-yellow-400 mb-3 border-b border-yellow-400/30 pb-2 inline-block">Fact 03</div>
+                    <p class="text-gray-200">In honeybees, the queen can lay up to <strong class="text-science-accent">2,000 eggs</strong> in a single day during peak season.</p>
+                </div>
+                <!-- Fact 4 -->
+                <div class="glass-card p-6 rounded-2xl reveal group cursor-pointer transition">
+                    <div class="text-xl font-bold text-green-400 mb-3 border-b border-green-400/30 pb-2 inline-block">Fact 04</div>
+                    <p class="text-gray-200">Starfish can reproduce by <strong class="text-science-pink">regeneration</strong>, where a whole new individual grows from just a severed body part.</p>
+                </div>
+                <!-- Fact 5 -->
+                <div class="glass-card p-6 rounded-2xl reveal group cursor-pointer transition" style="transition-delay: 100ms;">
+                    <div class="text-xl font-bold text-purple-400 mb-3 border-b border-purple-400/30 pb-2 inline-block">Fact 05</div>
+                    <p class="text-gray-200">Some lizards reproduce without a male through a biological process called <strong class="text-science-pink">parthenogenesis</strong>.</p>
+                </div>
+                <!-- Fact 6 -->
+                <div class="glass-card p-6 rounded-2xl reveal group cursor-pointer transition" style="transition-delay: 200ms;">
+                    <div class="text-xl font-bold text-orange-400 mb-3 border-b border-orange-400/30 pb-2 inline-block">Fact 06</div>
+                    <p class="text-gray-200">Baby kangaroos are born extremely tiny—about the size of a <strong class="text-science-pink">jellybean</strong>—and continue developing in the pouch.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-science-900 border-t border-science-800 py-10 relative z-10 text-center text-gray-500 text-sm">
+        <div class="container mx-auto px-6">
+            <p class="mb-2">Science Fair Exhibition Data Board</p>
+            <p>Created for educational purposes.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Data for the Demographics Table
+        const populationData = [
+            { country: 'India', births: 23.2, deaths: 9.6 },
+            { country: 'China', births: 9.5, deaths: 11.7 },
+            { country: 'Nigeria', births: 7.6, deaths: 2.7 },
+            { country: 'Pakistan', births: 6.8, deaths: 1.6 },
+            { country: 'Indonesia', births: 4.2, deaths: 2.2 },
+            { country: 'United States', births: 3.6, deaths: 3.0 },
+            { country: 'Ethiopia', births: 3.3, deaths: 0.78 },
+            { country: 'Bangladesh', births: 2.8, deaths: 0.9 },
+            { country: 'Brazil', births: 2.7, deaths: 1.5 },
+            { country: 'Mexico', births: 2.0, deaths: 0.8 },
+            { country: 'Philippines', births: 1.36, deaths: 0.7 },
+            { country: 'Russia', births: 1.2, deaths: 1.9 },
+            { country: 'Germany', births: 0.78, deaths: 1.04 },
+            { country: 'Japan', births: 0.69, deaths: 1.54 },
+            { country: 'France', births: 0.66, deaths: 0.66 },
+            { country: 'UK', births: 0.6, deaths: 0.67 },
+            { country: 'Italy', births: 0.38, deaths: 0.66 },
+            { country: 'Canada', births: 0.35, deaths: 0.34 },
+            { country: 'Australia', births: 0.29, deaths: 0.19 },
+            { country: 'South Korea', births: 0.23, deaths: 0.35 }
+        ];
+
+        const MAX_VALUE = 24; // Max millions for calculating bar width
+        const statsContainer = document.getElementById('stats-container');
+
+        // Populate Table Function
+        function renderTable() {
+            populationData.forEach((data, index) => {
+                const birthWidth = (data.births / MAX_VALUE) * 100;
+                const deathWidth = (data.deaths / MAX_VALUE) * 100;
+                
+                // Determine layout (is births > deaths?)
+                const isGrowing = data.births > data.deaths;
+
+                const rowHtml = `
+                <div class="grid grid-cols-12 gap-4 items-center px-4 py-2 hover:bg-white/5 rounded-lg transition group">
+                    <div class="col-span-3 font-semibold text-gray-200 flex items-center gap-2">
+                        ${data.country}
+                    </div>
+                    
+                    <!-- Births Bar -->
+                    <div class="col-span-4 flex items-center gap-3">
+                        <div class="w-full bg-science-800 rounded-full h-2.5 overflow-hidden flex justify-end">
+                            <div class="bg-science-accent h-2.5 rounded-full data-bar" style="width: ${birthWidth}%; animation-delay: ${index * 50}ms"></div>
+                        </div>
+                        <span class="text-sm font-mono text-science-accent w-12 shrink-0">${data.births}M</span>
+                    </div>
+
+                    <div class="col-span-1 flex justify-center text-xs font-bold ${isGrowing ? 'text-science-accent' : 'text-science-pink'}">
+                        ${isGrowing ? '+' : '-'}
+                    </div>
+
+                    <!-- Deaths Bar -->
+                    <div class="col-span-4 flex items-center gap-3">
+                        <span class="text-sm font-mono text-science-pink w-12 shrink-0 text-right">${data.deaths}M</span>
+                        <div class="w-full bg-science-800 rounded-full h-2.5 overflow-hidden">
+                            <div class="bg-science-pink h-2.5 rounded-full data-bar" style="width: ${deathWidth}%; animation-delay: ${index * 50}ms"></div>
+                        </div>
+                    </div>
+                </div>
+                `;
+                statsContainer.innerHTML += rowHtml;
+            });
+        }
+        
+        renderTable();
+
+        const cards = document.querySelectorAll('.glass-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -12;
+                const rotateY = ((x - centerX) / centerX) * 12;
+                
+                card.classList.remove('leaving');
+                card.style.transform = `perspective(1000px) scale(1.05) translateY(-5px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.classList.add('leaving');
+                card.style.transform = `perspective(1000px) scale(1) translateY(0) rotateX(0deg) rotateY(0deg)`;
+            });
+        });
+
+        // Scroll Reveal Logic (Intersection Observer)
+        const reveals = document.querySelectorAll('.reveal');
+        const revealOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, revealOptions);
+
+        reveals.forEach(reveal => {
+            revealOnScroll.observe(reveal);
+        });
+
+        // Sticky Navbar effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-lg', 'bg-science-900/90');
+                navbar.classList.remove('border-b-0');
+            } else {
+                navbar.classList.remove('shadow-lg', 'bg-science-900/90');
+                navbar.classList.add('border-b-0');
+            }
+        });
+
+        // Cellular / Molecular Interactive Canvas Background
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        
+        const mouse = { x: null, y: null, radius: 150 };
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = undefined;
+            mouse.y = undefined;
+        });
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', () => {
+            resize();
+            initParticles();
+        });
+
+        class Particle {
+            constructor(x, y, dx, dy, size, color) {
+                this.x = x;
+                this.y = y;
+                this.dx = dx;
+                this.dy = dy;
+                this.size = size;
+                this.color = color;
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.density = (Math.random() * 30) + 1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            update() {
+                // Movement
+                this.x += this.dx;
+                this.y += this.dy;
+
+                // Bounce off edges
+                if (this.x + this.size > width || this.x - this.size < 0) this.dx = -this.dx;
+                if (this.y + this.size > height || this.y - this.size < 0) this.dy = -this.dy;
+
+                // Mouse Interaction (Push effect)
+                if(mouse.x != null && mouse.y != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    let forceDirectionX = dx / distance;
+                    let forceDirectionY = dy / distance;
+                    let maxDistance = mouse.radius;
+                    let force = (maxDistance - distance) / maxDistance;
+                    let directionX = forceDirectionX * force * this.density;
+                    let directionY = forceDirectionY * force * this.density;
+
+                    if (distance < mouse.radius) {
+                        this.x -= directionX;
+                        this.y -= directionY;
+                    }
+                }
+                this.draw();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            let numberOfParticles = (width * height) / 9000; 
+            if(numberOfParticles > 150) numberOfParticles = 150; // Cap to prevent lag
+
+            const colors = ['rgba(0, 208, 255, 0.4)', 'rgba(255, 0, 127, 0.4)', 'rgba(83, 92, 145, 0.5)'];
+
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 3) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let dx = (Math.random() - 0.5) * 1;
+                let dy = (Math.random() - 0.5) * 1;
+                let color = colors[Math.floor(Math.random() * colors.length)];
+                particles.push(new Particle(x, y, dx, dy, size, color));
+            }
+        }
+
+        function animateCanvas() {
+            requestAnimationFrame(animateCanvas);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+            }
+            
+            connectParticles();
+        }
+
+        function connectParticles() {
+            let opacityValue = 1;
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x))
+                    + ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
+                    
+                    if (distance < (width/10) * (height/10)) {
+                        opacityValue = 1 - (distance/20000);
+                        ctx.strokeStyle = 'rgba(83, 92, 145,' + opacityValue + ')';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // Initialize Canvas
+        resize();
+        initParticles();
+        animateCanvas();
+
+    </script>
+</body>
+</html>
